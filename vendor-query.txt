@@ -1,0 +1,36 @@
+query Vendor($vendor: String!){  
+products(first:20, query: $vendor) {
+  
+    edges {
+      node {
+        totalInventory
+        title
+        handle
+        vendor
+        description
+        featuredImage {
+          originalSrc
+          altText
+        }
+        images(first: 3) {
+          edges {
+            node {
+              originalSrc
+              altText
+            }
+          }
+        }
+        options {
+          values
+        }
+       variants(first:10) {
+          edges {
+            node {
+              price
+            }
+          }
+        }
+      }
+    }
+  }
+}
