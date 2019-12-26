@@ -1,4 +1,7 @@
+###🛒
+
+#Shopify without Redux
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-https://www.robinwieruch.de/react-with-graphql-tutorial
-
+Copied from: https://github.com/awongh/storefront-api-examples/tree/master/react-js-buy

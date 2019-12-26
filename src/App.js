@@ -1,125 +1,126 @@
-import React, { Component } from 'react'
-import axios from 'axios'
-import './App.css'
+/* eslint-disable jsx-a11y/accessible-emoji */
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { useEffect, useState } from 'react'
+import Products from './components/shopify/Products'
+import Cart from './components/shopify/Cart'
 
-const TITLE = 'React GraphQL Shopify Client'
-
-const SHOPIFY_BASE_URL = `https://${process.env.REACT_APP_SHOP_NAME}.myshopify.com/api/graphql`
-
-const config = {
-  headers: {
-    'Content-Type': 'application/json',
-    'X-Shopify-Storefront-Access-Token': `${process.env.REACT_APP_SHOPIFY_ACCESS_TOKEN}`,
-  },
-}
-
-const axiosGitHubGraphQL = axios.create({
-  baseURL: SHOPIFY_BASE_URL,
-  headers: config.headers,
-})
-
-const GET_PRODUCTS = `
-query{
-  shop {
-    name
+const App = props => {
+  const [products, setProducts] = useState([])
+  const [isCartOpen, setCartOpen] = useState(false)
+  const [checkout, setCheckout] = useState({ lineItems: [] })
+  const [shop, setShop] = useState({})
+  console.log(props)
+  const cartOpen = () => {
+    setCartOpen(true)
   }
-products(first:20) {
+
+  useEffect(() => {
+    props.client.checkout.create().then(res => {
+      setCheckout(res)
+    })
+
+    props.client.product.fetchAll().then(res => {
+      setProducts(res)
+    })
+
+    props.client.shop.fetchInfo().then(res => {
+      setShop(res)
+    })
+  }, [])
+
+  let defaultOptionValues = {}
+  console.log(products)
+
+//let sizes = []
+products.forEach(selector => {
+    defaultOptionValues[selector.title] = selector.options[0]
+  })
+
+  const addVariantToCart = (variantId, quantity, title) => {
+    setCartOpen(true)
+
+    const lineItemsToAdd = [
+      { variantId, quantity: parseInt(quantity, 10), title: title}
+    ]
+    const checkoutId = checkout.id
+
+    return props.client.checkout
+      .addLineItems(checkoutId, lineItemsToAdd)
+      .then(res => {
+        setCheckout(res)
+      })
+  }
+
+  const updateQuantityInCart = (lineItemId, quantitys) => {
+    const checkoutId = checkout.id
+    const lineItemsToUpdate = [
+      { id: lineItemId, quantity: parseInt(quantitys, 10) },
+    ]
+
+    return props.client.checkout
+      .updateLineItems(checkoutId, lineItemsToUpdate)
+      .then(res => {
+        setCheckout(res)
+      })
+  }
   
-    edges {
-      node {
-        vendor
-        title
-        description
-        productType
-        onlineStoreUrl
-       
-        
-      
-      }
-    }
-  }
-}
-`
+  const updateOptionsInCart = (lineItemId, variant) => {
+    const checkoutId = checkout.id
+    const lineItemsToUpdateOpt = [
+      { id: lineItemId, variant: variant.title},
+    ]
 
-class App extends Component {
-  state = {
-    products: 20,
-    errors: null,
-  }
-  componentDidMount() {
-    this.onFetchFromGitHub()
+    return props.client.checkout
+      .updateLineItems(checkoutId, lineItemsToUpdateOpt)
+      .then(res => {
+        setCheckout(res)
+      })
   }
 
-  onSubmit = event => {
-    // fetch data
+  const removeLineItemInCart = lineItemId => {
+    const checkoutId = checkout.id
 
-    event.preventDefault()
+    return props.client.checkout
+      .removeLineItems(checkoutId, [lineItemId])
+      .then(res => {
+        setCheckout(res)
+      })
   }
 
-  onFetchFromGitHub = () => {
-    axiosGitHubGraphQL
-      .post('', { query: GET_PRODUCTS })
-      .then(result =>
-        this.setState(() => ({
-          products: result.data.data.products,
-          errors: result.data.errors,
-        }))
-      )
+  const handleCartClose = () => {
+    setCartOpen(false)
   }
 
-  render() {
-    const { products, errors } = this.state
-
-    const Products = ({ products, errors }) => {
-      if (errors) {
-        return (
-          <p>
-            <strong>Something went wrong:</strong>
-            {errors.map(error => error.message).join(' ')}
-          </p>
-        )
-      }
-
-      return (
-        <div>
-            <strong>Products from Vendor:</strong>
-           
-            <div>
-              <a href={products.onlineStoreUrl}>
-                <br>{products.title}</br>
-                <br>{products.description}</br>
-              </a>
-            </div>
-        </div>
-      )
-    }
-
-    return (
-      <div>
-        <h1>{TITLE}</h1>
-
-        <form onSubmit={this.onSubmit}>
-          <label htmlFor="url">Show products for dev-store9</label>
-          <input
-            id="url"
-            type="text"
-            value={products}
-            onChange={this.onChange}
-            style={{ width: '300px' }}
-          />
-          <button type="submit">Search</button>
-        </form>
-
-        <hr />
-
-        {products ? (
-          <Products products={products} errors={errors} />
-        ) : (
-          <p>No information yet ...</p>
+  return (
+    <div className="App">
+      <header className="App__header">
+        {!isCartOpen && (
+          <div className="App__view-cart-wrapper">
+            <button className="App__view-cart" onClick={cartOpen}>
+              🛒
+            </button>
+          </div>
         )}
-      </div>
-    )
-  }
+        <div className="App__title">
+          <h1>{shop.name}: React Example</h1>
+          <h2>{shop.description}</h2>
+        </div>
+      </header>
+      <Products
+        products={products}
+        client={props.client}
+        addVariantToCart={addVariantToCart}
+      />
+      <Cart
+        checkout={checkout}
+        isCartOpen={isCartOpen}
+        handleCartClose={handleCartClose}
+        updateQuantityInCart={updateQuantityInCart}
+        removeLineItemInCart={removeLineItemInCart}
+        updateOptionsInCart={updateOptionsInCart}
+      />
+    </div>
+  )
 }
 
 export default App
