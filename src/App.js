@@ -28,19 +28,32 @@ const App = props => {
     })
   }, [])
 
-  let defaultOptionValues = {}
+/*   let defaultOptionValues = {}
   console.log(products)
 
-//let sizes = []
 products.forEach(selector => {
-    defaultOptionValues[selector.title] = selector.options[0]
-  })
+    defaultOptionValues[selector.title] = selector.variants[0]
+  }) */
 
-  const addVariantToCart = (variantId, quantity, title) => {
+  
+products.forEach((v, i, o) => {
+  console.log('v ', v)
+    console.log('i ', i)
+      console.log('o ', o[i])
+
+})
+  
+ 
+
+  // console.log(defaultOptionValues) 
+  // console.log(props.client.product) 
+ 
+ // console.log(checkout.id)
+  const addVariantToCart = (variantId, quantity) => {
     setCartOpen(true)
 
     const lineItemsToAdd = [
-      { variantId, quantity: parseInt(quantity, 10), title: title}
+      { variantId, quantity: parseInt(quantity, 10)}
     ]
     const checkoutId = checkout.id
 
@@ -51,19 +64,22 @@ products.forEach(selector => {
       })
   }
 
-  const updateQuantityInCart = (lineItemId, quantitys) => {
+  const updateQuantityInCart = (lineItemId, num) => {
     const checkoutId = checkout.id
     const lineItemsToUpdate = [
-      { id: lineItemId, quantity: parseInt(quantitys, 10) },
+      { id: lineItemId, quantity: parseInt(num, 10) },
     ]
 
     return props.client.checkout
+    
       .updateLineItems(checkoutId, lineItemsToUpdate)
       .then(res => {
         setCheckout(res)
+        
       })
   }
   
+  /* `updateOptionsInCart` isn't doing anything */
   const updateOptionsInCart = (lineItemId, variant) => {
     const checkoutId = checkout.id
     const lineItemsToUpdateOpt = [

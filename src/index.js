@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom'
 import './index.css'
 import App from './App'
 import Client from 'shopify-buy'
-import LineItem from './components/shopify/LineItem'
 
 import * as serviceWorker from './serviceWorker'
 
@@ -12,7 +11,7 @@ const client = Client.buildClient({
   storefrontAccessToken: `${process.env.REACT_APP_SHOPIFY_ACCESS_TOKEN}`
 });
 
-console.log(<LineItem client={client} />)
+console.log(<App client={client} />)
 ReactDOM.render(<App client={client} />, document.getElementById('root'))
 
 // If you want your app to work offline and load faster, you can change
